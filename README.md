@@ -6,7 +6,7 @@
         简体中文 | <a href="/README-en.md">English</a>
     </p>
     <p align="center">
-        <a href="https://github.com/AndrewYukon/cloud-mail-plus/blob/main/LICENSE">
+        <a href="https://github.com/Furinelle/cloud-mail-plus/blob/main/LICENSE">
             <img src="https://img.shields.io/badge/license-MIT-green" />
         </a>
     </p>
@@ -165,7 +165,7 @@ Worker 内置 cron 定时任务，每天自动导出 D1 全量数据为 SQL 并 
 ### 一键部署（推荐）
 
 ```bash
-git clone https://github.com/AndrewYukon/cloud-mail-plus.git
+git clone https://github.com/Furinelle/cloud-mail-plus.git
 cd cloud-mail-plus
 bash scripts/deploy.sh
 ```
@@ -234,7 +234,7 @@ bash scripts/deploy.sh --with-ai
 1. **克隆仓库**
 
 ```bash
-git clone https://github.com/AndrewYukon/cloud-mail-plus.git
+git clone https://github.com/Furinelle/cloud-mail-plus.git
 cd cloud-mail-plus
 ```
 

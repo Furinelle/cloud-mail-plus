@@ -385,7 +385,7 @@
               <div class="concerning-item">
                 <span>{{ $t('version') }} :</span>
                 <el-badge is-dot :hidden="!hasUpdate">
-                  <el-button @click="jump('https://github.com/AndrewYukon/cloud-mail-plus/releases')">
+                  <el-button @click="jump('https://github.com/Furinelle/cloud-mail-plus/releases')">
                     {{ currentVersion }}
                     <template #icon>
                       <Icon icon="qlementine-icons:version-control-16" style="font-size: 20px" color="#1890FF"/>
@@ -396,13 +396,13 @@
               <div class="concerning-item">
                 <span>{{ $t('community') }} : </span>
                 <div class="community">
-                  <el-button @click="jump('https://github.com/AndrewYukon/cloud-mail-plus')">
+                  <el-button @click="jump('https://github.com/Furinelle/cloud-mail-plus')">
                     Github
                     <template #icon>
                       <Icon icon="codicon:github-inverted" width="22" height="22"/>
                     </template>
                   </el-button>
-                  <el-button @click="jump('https://github.com/AndrewYukon/cloud-mail-plus/blob/main/doc/demo/Buy-me-a-coffee-WeChat.JPG')">
+                  <el-button @click="jump('https://github.com/Furinelle/cloud-mail-plus/blob/main/doc/demo/Buy-me-a-coffee-WeChat.JPG')">
                     {{ $t('buyMeCoffee') }}
                     <template #icon>
                       <Icon color="#79D6B5" icon="simple-icons:buymeacoffee" width="20" height="20"/>
@@ -412,7 +412,7 @@
               </div>
               <div class="concerning-item">
                 <span>{{ $t('help') }} : </span>
-                <el-button @click="jump('https://github.com/AndrewYukon/cloud-mail-plus/blob/main/docs/external-api-guide.md')">
+                <el-button @click="jump('https://github.com/Furinelle/cloud-mail-plus/blob/main/docs/external-api-guide.md')">
                   {{ t('document') }}
                   <template #icon>
                     <Icon color="#79D6B5" icon="fluent-color:document-32" width="18" height="18"/>
@@ -943,7 +943,7 @@ const resendList = computed(() => {
 
 function getUpdate() {
   if (getUpdateErrorCount > 5 || !getUpdateErrorCount) return
-  axios.get('https://api.github.com/repos/AndrewYukon/cloud-mail-plus/releases/latest').then(({data}) => {
+  axios.get('https://api.github.com/repos/Furinelle/cloud-mail-plus/releases/latest').then(({data}) => {
     hasUpdate.value = data.name !== currentVersion
     getUpdateErrorCount = 0
   }).catch(e => {

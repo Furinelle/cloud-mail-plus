@@ -6,7 +6,7 @@
         <a href="/README.md">简体中文</a> | English
     </p>
     <p align="center">
-        <a href="https://github.com/AndrewYukon/cloud-mail-plus/blob/main/LICENSE">
+        <a href="https://github.com/Furinelle/cloud-mail-plus/blob/main/LICENSE">
             <img src="https://img.shields.io/badge/license-MIT-green" />
         </a>
     </p>
@@ -169,7 +169,7 @@ A conversational email assistant powered by [Cloudflare Workers AI](https://deve
 ### One-Click Deploy (Recommended)
 
 ```bash
-git clone https://github.com/AndrewYukon/cloud-mail-plus.git
+git clone https://github.com/Furinelle/cloud-mail-plus.git
 cd cloud-mail-plus
 bash scripts/deploy.sh
 ```
@@ -235,7 +235,7 @@ For finer control (custom domain, sharing an existing D1, etc.), follow the manu
 1. **Clone**
 
 ```bash
-git clone https://github.com/AndrewYukon/cloud-mail-plus.git
+git clone https://github.com/Furinelle/cloud-mail-plus.git
 cd cloud-mail-plus
 ```
 
