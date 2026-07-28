@@ -31,7 +31,7 @@ async function save() {
 <template>
   <div class="agent-settings">
     <h2>✨ {{ $t('aiAgent') }}</h2>
-    <p class="hint">{{ $t('aiAgentPoweredBy') }} <code>@cf/moonshotai/kimi-k2.5</code></p>
+    <p class="hint">{{ $t('aiAgentPoweredBy') }} <code>@cf/zai-org/glm-4.7-flash</code></p>
 
     <el-form label-position="top" style="max-width: 600px;">
       <el-form-item :label="$t('aiAgentEnable')">

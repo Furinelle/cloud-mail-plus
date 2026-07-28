@@ -119,7 +119,7 @@ Worker 内置 cron 定时任务，每天自动导出 D1 全量数据为 SQL 并 
 
 ### 8. AI 邮件助手（Cloudflare Workers AI）
 
-集成 [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) (`@cf/moonshotai/kimi-k2.5`) 的对话式邮件助手，登录后从 Header **✨ 邮件助手** 按钮打开侧边栏即可与 AI 对话。
+集成 [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) (`@cf/zai-org/glm-4.7-flash`) 的对话式邮件助手，登录后从 Header **✨ 邮件助手** 按钮打开侧边栏即可与 AI 对话。
 
 **9 个邮件工具**（AI 自动选择调用）：
 
@@ -174,7 +174,7 @@ bash scripts/deploy.sh
 - 检查 wrangler 登录状态（未登录会启动 `wrangler login`）
 - 幂等创建 D1 / KV / R2（已存在则复用，不会重复创建）
 - 生成 64 字符 JWT secret
-- **可选启用 AI Email Agent**（Workers AI kimi-k2.5 + 自动起草） — 自动写入 `[ai]` binding、`EmailAgent` Durable Object、DO migration、agent schema
+- **可选启用 AI Email Agent**（Workers AI GLM-4.7-Flash + 自动起草） — 自动写入 `[ai]` binding、`EmailAgent` Durable Object、DO migration、agent schema
 - 在 `wrangler.toml` 的标记块内写入 bindings + vars（重跑替换不重复）
 - `wrangler deploy`（自动构建 Vue 前端）
 - 调用 `/api/init/<jwt_secret>` 初始化 D1 schema（含 agent 表）
@@ -211,7 +211,7 @@ bash scripts/deploy.sh --with-ai
 - **发送 + 删除需要二次确认**（在侧边栏底部弹出确认卡片，永远不会自动执行）
 - **收到新邮件时自动起草回复**（保存到草稿箱，不会自动发送）
 - **完整的中英文 i18n**（跟随系统语言切换）
-- **模型**：`@cf/moonshotai/kimi-k2.5`（Cloudflare Workers AI，按 neuron 计费，免费层每天 10000 neurons）
+- **模型**：`@cf/zai-org/glm-4.7-flash`（Cloudflare Workers AI，按 neuron 计费，免费层每天 10000 neurons）
 
 > **集成架构**：AI SDK v6 (`ai` 包) + `@ai-sdk/vue` v3 (`Chat` 类) + `workers-ai-provider` + Cloudflare Workers AI。Worker 路由直接调用 `streamText()` 通过 SSE 流响应（不使用 Durable Object，避免 AIChatAgent 与 Vue Chat 的 WebSocket/HTTP 协议不匹配问题）。
 

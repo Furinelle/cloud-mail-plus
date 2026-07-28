@@ -29,7 +29,7 @@ set -euo pipefail
 # Re-runs are safe: existing D1/KV/R2 resources are detected and reused.
 # --destroy is irreversible: D1 data, KV pairs, R2 objects are permanently deleted.
 #
-# AI Email Agent: uses Cloudflare Workers AI (@cf/moonshotai/kimi-k2.5) +
+# AI Email Agent: uses Cloudflare Workers AI (@cf/zai-org/glm-4.7-flash) +
 # Durable Objects (EmailAgent class). Auto-enables both bindings, the DO
 # migration, and runs /api/init to create the agent_message table + add
 # agent_* columns. Per-user opt-in via Settings → AI Email Agent in the UI.
@@ -147,7 +147,7 @@ prompt_inputs() {
     USE_AI="$FORCE_AI"
   elif [ -z "${USE_AI:-}" ]; then
     if [ -d "$WORKER_DIR/src/agent" ]; then
-      read -rp "  Enable AI Email Agent (Workers AI kimi-k2.5 + auto-draft)? [Y/n]: " ans
+      read -rp "  Enable AI Email Agent (Workers AI GLM-4.7-Flash + auto-draft)? [Y/n]: " ans
       if [[ "${ans:-y}" =~ ^[Yy]$ ]]; then USE_AI="true"; else USE_AI="false"; fi
     else
       USE_AI="false"

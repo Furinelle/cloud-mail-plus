@@ -2,11 +2,12 @@ import { tool } from 'ai';
 import { z } from 'zod';
 import { eq, and, like, gte, lte, desc } from 'drizzle-orm';
 import emailService from '../service/email-service';
-import cfEmailService from '../service/cf-email-service';
+import accountService from '../service/account-service';
 import attService from '../service/att-service';
 import orm from '../entity/orm';
 import { email as emailEntity } from '../entity/email';
 import { isDel, emailConst } from '../const/entity-const';
+import { MODEL_ID } from './model';
 
 // Tool factory — binds env + userId so each user only sees their own data.
 // `c` mirrors the Hono context shape that the rest of the codebase uses: `{ env }`.
@@ -112,7 +113,7 @@ export function buildTools({ env, userId, userEmail }) {
         const detail = await emailService.detail(c, emailId, userId);
         if (!detail) return { error: 'Not found' };
         const body = (detail.text || detail.content || '').slice(0, 6000);
-        const r = await env.AI.run('@cf/moonshotai/kimi-k2.5', {
+        const r = await env.AI.run(MODEL_ID, {
           messages: [
             { role: 'system', content: 'Summarize the email in 3-5 markdown bullets, then list action items under "Actions:".' },
             { role: 'user', content: `Subject: ${detail.subject}\nFrom: ${detail.sendEmail}\n\n${body}` },
@@ -132,7 +133,7 @@ export function buildTools({ env, userId, userEmail }) {
       execute: async ({ emailId, instructions, tone }) => {
         const original = await emailService.detail(c, emailId, userId);
         if (!original) return { error: 'Original email not found' };
-        const r = await env.AI.run('@cf/moonshotai/kimi-k2.5', {
+        const r = await env.AI.run(MODEL_ID, {
           messages: [
             { role: 'system', content: `Write a ${tone} email reply in clean HTML (no <html>/<body>, no markdown). Match the sender's language. Sign as ${userEmail.split('@')[0]}.` },
             { role: 'user', content: `Reply to:\nFrom: ${original.sendEmail}\nSubject: ${original.subject}\n\n${(original.text || original.content || '').slice(0, 4000)}\n\nInstructions: ${instructions}` },
@@ -148,7 +149,7 @@ export function buildTools({ env, userId, userEmail }) {
           relation: `${original.relation || ''} ${original.messageId || ''}`.trim(),
           content: html,
           text: html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
-          aiMetadata: JSON.stringify({ source: 'tool', sourceEmailId: emailId, model: '@cf/moonshotai/kimi-k2.5' }),
+          aiMetadata: JSON.stringify({ source: 'tool', sourceEmailId: emailId, model: MODEL_ID }),
         });
         return { draftId, preview: html.slice(0, 400), to: original.sendEmail };
       },
@@ -162,7 +163,7 @@ export function buildTools({ env, userId, userEmail }) {
         instructions: z.string().min(1),
       }),
       execute: async ({ to, subject, instructions }) => {
-        const r = await env.AI.run('@cf/moonshotai/kimi-k2.5', {
+        const r = await env.AI.run(MODEL_ID, {
           messages: [
             { role: 'system', content: `Write an email body in clean HTML. Sign as ${userEmail.split('@')[0]}. No markdown.` },
             { role: 'user', content: `To: ${to}\nSubject: ${subject}\nInstructions: ${instructions}` },
@@ -172,7 +173,7 @@ export function buildTools({ env, userId, userEmail }) {
         const draftId = await emailService.saveDraft(c, {
           userId, accountId: 0, toEmail: to, subject, content: html,
           text: html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
-          aiMetadata: JSON.stringify({ source: 'tool-new', model: '@cf/moonshotai/kimi-k2.5' }),
+          aiMetadata: JSON.stringify({ source: 'tool-new', model: MODEL_ID }),
         });
         return { draftId, preview: html.slice(0, 400) };
       },
@@ -200,13 +201,19 @@ export async function executeConfirmedTool({ env, userId, userEmail, name, args 
   if (name === 'sendDraft') {
     const draft = await emailService.detail(c, args.draftId, userId);
     if (!draft) return { error: 'Draft not found' };
-    const r = await cfEmailService.send(env, {
-      from: { email: userEmail, name: userEmail.split('@')[0] },
+    let fromEmail = userEmail;
+    if (draft.accountId) {
+      const account = await accountService.selectById(c, draft.accountId);
+      if (account) fromEmail = account.email;
+    }
+    const r = await emailService.sendRaw(c, {
+      fromEmail,
+      fromName: userEmail.split('@')[0],
       to: draft.toEmail,
       subject: draft.subject,
       html: draft.content,
       text: draft.text,
-      headers: draft.inReplyTo ? { 'In-Reply-To': draft.inReplyTo, References: draft.relation } : {},
+      headers: draft.inReplyTo ? { 'in-reply-to': draft.inReplyTo, references: draft.relation } : undefined,
     });
     await emailService.markSent(c, args.draftId, userId, r);
     return { sent: true, messageId: r?.messageId || '' };

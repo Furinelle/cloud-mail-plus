@@ -872,6 +872,48 @@ const emailService = {
 		}).where(and(eq(email.emailId, emailId), eq(email.userId, userId))).run();
 	},
 
+	// Send an existing draft through the configured provider without inserting a
+	// second email row. This keeps AI-assisted sends aligned with email_provider.
+	async sendRaw(c, { fromEmail, fromName, to, subject, html, text, headers }) {
+		const { resendTokens, emailProvider } = await settingService.query(c);
+		const domain = emailUtils.getDomain(fromEmail);
+		const resendToken = resendTokens[domain];
+		const recipients = Array.isArray(to) ? to : [to];
+
+		const sendForm = {
+			from: `${fromName || emailUtils.getName(fromEmail)} <${fromEmail}>`,
+			to: recipients,
+			subject,
+			text,
+			html,
+		};
+		if (headers) sendForm.headers = headers;
+
+		const useCf = emailProvider !== settingConst.emailProvider.RESEND_ONLY;
+		const useResend = emailProvider !== settingConst.emailProvider.CF_ONLY;
+
+		let cfSent = false;
+		if (useCf && recipients.length <= 50) {
+			try {
+				await cfEmailService.send(c.env, sendForm);
+				cfSent = true;
+			} catch (cfError) {
+				console.error(`[CF Email] failed: code=${cfError.code || 'none'} msg=${cfError.message}`);
+				if (!useResend) throw new BizError(`CF Email failed: ${cfError.message}`);
+			}
+		}
+
+		let data = null;
+		if (!cfSent) {
+			if (!resendToken) throw new BizError(t('noResendToken'));
+			const resendResult = await new Resend(resendToken).emails.send(sendForm);
+			if (resendResult.error) throw new BizError(resendResult.error.message);
+			data = resendResult.data;
+		}
+
+		return { messageId: data?.id || null, cfSent };
+	},
+
 	async softDelete(c, emailId, userId) {
 		await orm(c).update(email).set({ isDel: isDel.DELETE })
 			.where(and(eq(email.emailId, emailId), eq(email.userId, userId)))

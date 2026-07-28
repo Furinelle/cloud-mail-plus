@@ -1,0 +1,56 @@
+name = "fontaine-cloud-mail"
+main = "src/index.js"
+compatibility_date = "2025-06-04"
+compatibility_flags = ["nodejs_compat"]
+keep_vars = true
+workers_dev = false
+preview_urls = false
+
+[observability]
+enabled = true
+
+[[d1_databases]]
+binding = "db"
+database_name = "fontaine-cloud-mail"
+database_id = "c571339a-28f2-4fe4-9fe1-1e142855fefc"
+
+[[kv_namespaces]]
+binding = "kv"
+id = "8a595f8439a44c0eb85bb1a2f7a4fcfc"
+
+[[r2_buckets]]
+binding = "r2"
+bucket_name = "fontaine-cloud-mail"
+
+[[send_email]]
+name = "EMAIL"
+
+[ai]
+binding = "AI"
+
+[[durable_objects.bindings]]
+name = "EMAIL_AGENT"
+class_name = "EmailAgent"
+
+[[migrations]]
+tag = "v1-add-email-agent"
+new_sqlite_classes = ["EmailAgent"]
+
+[assets]
+binding = "assets"
+directory = "./dist"
+not_found_handling = "single-page-application"
+run_worker_first = true
+
+[triggers]
+crons = ["0 16 * * *"]
+
+[vars]
+orm_log = false
+analysis_cache = false
+domain = '["fontaine.blue"]'
+admin = "admin@fontaine.blue"
+project_link = false
+
+[build]
+command = "CI=true pnpm --prefix ../mail-vue run build"

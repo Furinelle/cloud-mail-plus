@@ -3,8 +3,7 @@ import { createWorkersAI } from 'workers-ai-provider';
 import { streamText, generateText, convertToModelMessages, stepCountIs } from 'ai';
 import { buildTools, executeConfirmedTool } from './tools';
 import { buildSystemPrompt, buildAutoDraftPrompt } from './system-prompt';
-
-const MODEL_ID = '@cf/moonshotai/kimi-k2.5';
+import { MODEL_ID } from './model';
 
 // Per-user agent. Routes deterministically to a single DO instance via
 //   env.EMAIL_AGENT.idFromName(`user-${userId}`)

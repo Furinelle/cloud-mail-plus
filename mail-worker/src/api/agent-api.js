@@ -6,8 +6,7 @@ import { streamText, convertToModelMessages, stepCountIs } from 'ai';
 import { createWorkersAI } from 'workers-ai-provider';
 import { buildTools, executeConfirmedTool } from '../agent/tools';
 import { buildSystemPrompt } from '../agent/system-prompt';
-
-const MODEL_ID = '@cf/moonshotai/kimi-k2.5';
+import { MODEL_ID } from '../agent/model';
 
 // ---- chat: AI SDK v6 streaming, direct (no DO routing — protocol mismatch with AIChatAgent) ----
 app.post('/agent/chat', async (c) => {

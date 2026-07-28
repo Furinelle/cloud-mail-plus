@@ -123,7 +123,7 @@ Built-in Worker cron job exports the entire D1 database as gzipped SQL to R2 dai
 
 ### 8. AI Email Agent (Cloudflare Workers AI)
 
-A conversational email assistant powered by [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) (`@cf/moonshotai/kimi-k2.5`). After signing in, click the **✨ Email Agent** pill in the header to open the side panel and chat with the AI.
+A conversational email assistant powered by [Cloudflare Workers AI](https://developers.cloudflare.com/workers-ai/) (`@cf/zai-org/glm-4.7-flash`). After signing in, click the **✨ Email Agent** pill in the header to open the side panel and chat with the AI.
 
 **9 email tools** (the model decides which to call):
 
@@ -212,7 +212,7 @@ What the agent provides:
 - **Send + delete require confirmation** (a yellow card pops up at the bottom of the side panel — never auto-executed)
 - **Auto-draft replies on inbound email** (saved to Drafts — never sent automatically)
 - **Full bilingual i18n** (en / zh, follows the language toggle)
-- **Model**: `@cf/moonshotai/kimi-k2.5` (Cloudflare Workers AI — billed by neurons, free tier is 10,000 neurons/day)
+- **Model**: `@cf/zai-org/glm-4.7-flash` (Cloudflare Workers AI — billed by neurons, free tier is 10,000 neurons/day)
 
 > **Integration**: AI SDK v6 (`ai`) + `@ai-sdk/vue` v3 (`Chat` class) + `workers-ai-provider` + Cloudflare Workers AI. The Worker route calls `streamText()` directly and pipes SSE back (no Durable Object — avoids the WebSocket/HTTP protocol mismatch between AIChatAgent and the Vue Chat client).
 

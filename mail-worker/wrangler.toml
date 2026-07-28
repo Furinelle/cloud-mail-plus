@@ -35,7 +35,7 @@ crons = ["0 16 * * *"]	# Daily housekeeping at 16:00 UTC
 
 # --- AI Email Agent (optional, requires Workers AI access) ---
 # Uncomment to enable the AIChatAgent side panel + auto-draft on inbound email.
-# Model: @cf/moonshotai/kimi-k2.5
+# Model: @cf/zai-org/glm-4.7-flash
 #[ai]
 #binding = "AI"
 
