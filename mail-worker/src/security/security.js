@@ -26,6 +26,7 @@ const exclude = [
 const requirePerms = [
 	'/email/send',
 	'/email/delete',
+	'/email/permanentDelete',
 	'/account/list',
 	'/account/delete',
 	'/account/add',

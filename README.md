@@ -161,7 +161,7 @@ cd mail-worker
 pnpm run test:unit
 ```
 
-测试使用本地临时 SQLite 和假对象存储，不加载 Wrangler 配置、不部署、不访问 Cloudflare 或真实邮件。现有 `test` 脚本会部署测试 Worker，不能用作离线回归检查。
+测试覆盖 Agent 动作权限、普通/Agent 共享发送策略与成功计数、跨用户删除及登出隔离。测试使用本地临时 SQLite、假发送服务和假对象存储，不加载 Wrangler 配置、不部署、不访问 Cloudflare 或真实邮件。现有 `test` 脚本会部署测试 Worker，不能用作离线回归检查。
 
 ## 部署
 

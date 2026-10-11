@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Keep provider/network and unrelated account flows out of this offline regression.
+vi.mock('../../src/service/perm-service', () => ({ default: { userPermKeys: async () => ['email:delete'] } }));
 vi.mock('../../src/service/cf-email-service', () => ({ default: {} }));
 vi.mock('../../src/service/user-service', () => ({ default: {} }));
 vi.mock('../../src/service/account-service', () => ({ default: {} }));
