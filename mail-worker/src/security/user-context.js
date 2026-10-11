@@ -12,8 +12,8 @@ const userContext = {
 
 	async getToken(c) {
 		const jwt = c.req.header(constant.TOKEN_HEADER);
-		const { token } = JwtUtils.verifyToken(c,jwt);
-		return token;
+		const payload = await JwtUtils.verifyToken(c,jwt);
+		return payload?.token;
 	},
 };
 export default userContext;
