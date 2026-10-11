@@ -149,25 +149,9 @@ const emailService = {
 		return orm(c).insert(email).values({ ...params }).returning().get();
 	},
 
-	//邮件发送
-	async send(c, params, userId) {
-
-		let {
-			accountId, //发送账号id
-			name, //发件人名字
-			sendType, //发件类型
-			emailId, //邮件id，如果是回复邮件会带
-			receiveEmail, //收件人邮箱
-			text, //邮件纯文本
-			content, //邮件内容
-			subject, //邮件标题
-			attachments //附件
-		} = params;
-
-		const { resendTokens, r2Domain, send, domainList, emailProvider } = await settingService.query(c);
-
-		let { imageDataList, html } = await attService.toImageUrlHtml(c, content);
-
+	// Shared by ordinary mail and confirmed Agent drafts.
+	async checkSend(c, accountId, receiveEmail, userId, settings) {
+		const { send, domainList, resendTokens, emailProvider } = settings;
 		//判断是否关闭发件功能
 		if (send === settingConst.send.CLOSE) {
 			throw new BizError(t('disabledSend'), 403);
@@ -198,13 +182,14 @@ const emailService = {
 
 		//如果不是管理员，权限设置了发送次数
 		if (c.env.admin !== userRow.email && roleRow.sendCount) {
+			const usedCount = Number(userRow.sendCount);
 
-			if (userRow.sendCount >= roleRow.sendCount) {
+			if (usedCount >= roleRow.sendCount) {
 				if (roleRow.sendType === 'day') throw new BizError(t('daySendLimit'), 403);
 				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLimit'), 403);
 			}
 
-			if (userRow.sendCount + receiveEmail.length > roleRow.sendCount) {
+			if (usedCount + receiveEmail.length > roleRow.sendCount) {
 				if (roleRow.sendType === 'day') throw new BizError(t('daySendLack'), 403);
 				if (roleRow.sendType === 'count') throw new BizError(t('totalSendLack'), 403);
 			}
@@ -236,6 +221,37 @@ const emailService = {
 		if (!resendToken && !allInternal && emailProvider === settingConst.emailProvider.RESEND_ONLY) {
 			throw new BizError(t('noResendToken'));
 		}
+
+		return { roleRow, accountRow, allInternal, resendToken };
+	},
+
+	async recordSendSuccess(c, roleRow, quantity, userId) {
+		if (roleRow.sendCount && roleRow.sendType !== 'internal') {
+			await userService.incrUserSendCount(c, quantity, userId);
+		}
+	},
+
+	//邮件发送
+	async send(c, params, userId) {
+
+		let {
+			accountId, //发送账号id
+			name, //发件人名字
+			sendType, //发件类型
+			emailId, //邮件id，如果是回复邮件会带
+			receiveEmail, //收件人邮箱
+			text, //邮件纯文本
+			content, //邮件内容
+			subject, //邮件标题
+			attachments //附件
+		} = params;
+
+		const settings = await settingService.query(c);
+		const { r2Domain, emailProvider } = settings;
+
+		let { imageDataList, html } = await attService.toImageUrlHtml(c, content);
+
+		const { roleRow, accountRow, allInternal, resendToken } = await this.checkSend(c, accountId, receiveEmail, userId, settings);
 
 		//没有发件人名字自动截取
 		if (!name) {
@@ -344,9 +360,7 @@ const emailService = {
 		}
 
 		//如果权限有发送次数增加用户发送次数
-		if (roleRow.sendCount && roleRow.sendType !== 'internal') {
-			await userService.incrUserSendCount(c, receiveEmail.length, userId);
-		}
+		await this.recordSendSuccess(c, roleRow, receiveEmail.length, userId);
 
 		//保存到数据库并返回结果
 		const emailResult = await orm(c).insert(email).values(emailData).returning().get();
@@ -874,11 +888,12 @@ const emailService = {
 
 	// Send an existing draft through the configured provider without inserting a
 	// second email row. This keeps AI-assisted sends aligned with email_provider.
-	async sendRaw(c, { fromEmail, fromName, to, subject, html, text, headers }) {
-		const { resendTokens, emailProvider } = await settingService.query(c);
-		const domain = emailUtils.getDomain(fromEmail);
-		const resendToken = resendTokens[domain];
+	async sendRaw(c, { accountId, fromName, to, subject, html, text, headers }, userId) {
+		const settings = await settingService.query(c);
+		const { emailProvider } = settings;
 		const recipients = Array.isArray(to) ? to : [to];
+		const { roleRow, accountRow, resendToken } = await this.checkSend(c, accountId, recipients, userId, settings);
+		const fromEmail = accountRow.email;
 
 		const sendForm = {
 			from: `${fromName || emailUtils.getName(fromEmail)} <${fromEmail}>`,
@@ -911,6 +926,7 @@ const emailService = {
 			data = resendResult.data;
 		}
 
+		await this.recordSendSuccess(c, roleRow, recipients.length, userId);
 		return { messageId: data?.id || null, cfSent };
 	},
 

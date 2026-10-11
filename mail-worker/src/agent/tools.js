@@ -3,6 +3,9 @@ import { z } from 'zod';
 import { eq, and, like, gte, lte, desc } from 'drizzle-orm';
 import emailService from '../service/email-service';
 import accountService from '../service/account-service';
+import permService from '../service/perm-service';
+import BizError from '../error/biz-error';
+import { t } from '../i18n/i18n';
 import attService from '../service/att-service';
 import orm from '../entity/orm';
 import { email as emailEntity } from '../entity/email';
@@ -198,23 +201,25 @@ export function buildTools({ env, userId, userEmail }) {
 // Server-side handler for confirmed tools (called from /agent/confirm after client confirms).
 export async function executeConfirmedTool({ env, userId, userEmail, name, args }) {
   const c = { env };
+  const permission = { sendDraft: 'email:send', deleteEmail: 'email:delete' }[name];
+  if (permission && userEmail !== env.admin) {
+    const permissions = await permService.userPermKeys(c, userId);
+    if (!permissions.includes(permission)) throw new BizError(t('unauthorized'), 403);
+  }
   if (name === 'sendDraft') {
     const draft = await emailService.detail(c, args.draftId, userId);
     if (!draft) return { error: 'Draft not found' };
-    let fromEmail = userEmail;
-    if (draft.accountId) {
-      const account = await accountService.selectById(c, draft.accountId);
-      if (account) fromEmail = account.email;
-    }
+    // New Agent drafts use accountId=0; resolve the user's primary account.
+    const accountId = draft.accountId || (await accountService.selectByEmailIncludeDel(c, userEmail))?.accountId;
     const r = await emailService.sendRaw(c, {
-      fromEmail,
+      accountId,
       fromName: userEmail.split('@')[0],
       to: draft.toEmail,
       subject: draft.subject,
       html: draft.content,
       text: draft.text,
       headers: draft.inReplyTo ? { 'in-reply-to': draft.inReplyTo, references: draft.relation } : undefined,
-    });
+    }, userId);
     await emailService.markSent(c, args.draftId, userId, r);
     return { sent: true, messageId: r?.messageId || '' };
   }
