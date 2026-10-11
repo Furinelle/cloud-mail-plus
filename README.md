@@ -152,6 +152,17 @@ Worker 内置 cron 定时任务，每天自动导出 D1 全量数据为 SQL 并 
 
 ---
 
+## 离线安全回归
+
+在带有 `node:sqlite` 的 Node.js 环境中执行（本次以 Node 26 验证）：
+
+```bash
+cd mail-worker
+pnpm run test:unit
+```
+
+测试使用本地临时 SQLite 和假对象存储，不加载 Wrangler 配置、不部署、不访问 Cloudflare 或真实邮件。现有 `test` 脚本会部署测试 Worker，不能用作离线回归检查。
+
 ## 部署
 
 ### 前置条件

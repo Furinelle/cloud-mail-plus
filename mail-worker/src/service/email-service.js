@@ -921,6 +921,13 @@ const emailService = {
 	},
 
 	async permanentDelete(c, emailId, userId) {
+		const ownedEmail = await orm(c).select({ emailId: email.emailId }).from(email)
+			.where(and(eq(email.emailId, emailId), eq(email.userId, userId)))
+			.get();
+		if (!ownedEmail) {
+			throw new BizError('Email not found', 404);
+		}
+
 		await attService.removeByEmailIds(c, [emailId]);
 		await orm(c).delete(email)
 			.where(and(eq(email.emailId, emailId), eq(email.userId, userId)))
